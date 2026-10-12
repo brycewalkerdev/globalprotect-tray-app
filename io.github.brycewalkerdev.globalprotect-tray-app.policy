@@ -3,8 +3,8 @@
   "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 <policyconfig>
   <vendor>GlobalProtect Tray</vendor>
-  <vendor_url>https://github.com/brycewalker/globalprotect-tray</vendor_url>
-  <action id="io.github.brycewalker.globalprotect-tray.helper">
+  <vendor_url>https://github.com/brycewalkerdev/globalprotect-tray-app</vendor_url>
+  <action id="io.github.brycewalkerdev.globalprotect-tray-app.helper">
     <description>Connect or disconnect the GlobalProtect VPN</description>
     <message>Authentication is required to control the GlobalProtect VPN</message>
     <defaults>

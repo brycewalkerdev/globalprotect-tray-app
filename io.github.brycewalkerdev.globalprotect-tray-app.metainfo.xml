@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.brycewalker.globalprotect-tray</id>
+  <id>io.github.brycewalkerdev.globalprotect-tray-app</id>
   <name>GlobalProtect Tray</name>
   <summary>External-browser tray client for GlobalProtect-compatible VPNs</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
-  <developer id="io.github.brycewalker">
+  <developer id="io.github.brycewalkerdev">
     <name>Bryce Walker</name>
   </developer>
   <description>
@@ -23,8 +23,8 @@
   <provides>
     <binary>globalprotect-tray</binary>
   </provides>
-  <url type="homepage">https://github.com/brycewalker/globalprotect-tray</url>
-  <url type="bugtracker">https://github.com/brycewalker/globalprotect-tray/issues</url>
+  <url type="homepage">https://github.com/brycewalkerdev/globalprotect-tray-app</url>
+  <url type="bugtracker">https://github.com/brycewalkerdev/globalprotect-tray-app/issues</url>
   <releases>
     <release version="0.2.0" date="2026-10-12">
       <description>

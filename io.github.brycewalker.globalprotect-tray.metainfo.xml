@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.brycewalker.globalprotect-tray</id>
+  <name>GlobalProtect Tray</name>
+  <summary>External-browser tray client for GlobalProtect-compatible VPNs</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.brycewalker">
+    <name>Bryce Walker</name>
+  </developer>
+  <description>
+    <p>
+      GlobalProtect Tray controls globalprotect-openconnect from a lightweight
+      desktop menu. Authentication runs in the user's regular browser, enabling
+      password managers, WebAuthn, and security keys.
+    </p>
+    <p>
+      Portal and direct-gateway servers are supported, with automatic server
+      type and legacy OpenSSL compatibility detection.
+    </p>
+  </description>
+  <launchable type="desktop-id">globalprotect-tray.desktop</launchable>
+  <provides>
+    <binary>globalprotect-tray</binary>
+  </provides>
+  <url type="homepage">https://github.com/brycewalker/globalprotect-tray</url>
+  <url type="bugtracker">https://github.com/brycewalker/globalprotect-tray/issues</url>
+  <releases>
+    <release version="0.2.0" date="2026-10-12">
+      <description>
+        <p>Initial distributable release with automatic server detection.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

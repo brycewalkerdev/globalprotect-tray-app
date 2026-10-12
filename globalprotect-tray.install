@@ -1,0 +1,9 @@
+post_install() {
+  echo "GlobalProtect Tray installs a narrowly scoped Polkit action."
+  echo "Active local users may start and stop the VPN without an administrator password."
+  echo "Launch 'globalprotect-tray' and complete the first-run server setup."
+}
+
+post_upgrade() {
+  post_install
+}

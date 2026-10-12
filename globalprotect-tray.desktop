@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=GlobalProtect Tray
+Comment=Connect to GlobalProtect using an external browser
+Exec=/usr/bin/globalprotect-tray %u
+Icon=globalprotect-tray
+Terminal=false
+Categories=Network;RemoteAccess;
+Keywords=VPN;GlobalProtect;OpenConnect;
+MimeType=x-scheme-handler/globalprotectcallback;

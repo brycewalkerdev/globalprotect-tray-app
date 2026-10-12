@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+"""Narrow root helper for globalprotect-tray.
+
+This file is installed root-owned and is the only executable authorized by the
+Polkit policy. It intentionally exposes no arbitrary command or gpclient flags.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+from urllib.parse import urlparse
+
+
+GPCLIENT = "/usr/bin/gpclient"
+MAX_AUTH_BYTES = 1024 * 1024
+
+
+def die(message: str, code: int = 2) -> "NoReturn":
+    print(f"globalprotect-tray-helper: {message}", file=sys.stderr)
+    raise SystemExit(code)
+
+
+def validate_portal(value: str) -> str:
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        die("invalid portal URL")
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        die("portal must be an https URL without embedded credentials")
+    if parsed.query or parsed.fragment:
+        die("portal URL cannot contain a query or fragment")
+    return value.rstrip("/")
+
+
+def read_auth() -> bytes:
+    data = sys.stdin.buffer.readline(MAX_AUTH_BYTES + 1)
+    if not data or len(data) > MAX_AUTH_BYTES:
+        die("missing or oversized authentication response")
+    try:
+        decoded = json.loads(data)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        die("invalid authentication response")
+    success = decoded.get("success", decoded.get("Success")) if isinstance(decoded, dict) else None
+    if not isinstance(success, dict):
+        die("authentication was not successful")
+    return data.rstrip(b"\r\n") + b"\n"
+
+
+def connect(portal: str, direct_gateway: bool, openssl_compat: bool) -> None:
+    if Path("/run/gpclient.lock").exists():
+        die("a gpclient connection already appears to be active")
+    auth = read_auth()
+    # A memory-backed file avoids persisting the SAML result and cannot block
+    # the way writing a large value to an unread pipe could.
+    auth_fd = os.memfd_create("globalprotect-auth", 0)
+    os.write(auth_fd, auth)
+    os.lseek(auth_fd, 0, os.SEEK_SET)
+    os.dup2(auth_fd, 0)
+    os.close(auth_fd)
+    args = [GPCLIENT]
+    if openssl_compat:
+        args.append("--fix-openssl")
+    args.extend(["connect", "--cookie-on-stdin"])
+    if direct_gateway:
+        args.append("--as-gateway")
+    else:
+        args.append("--auto-gateway")
+    args.append(portal)
+    os.execv(GPCLIENT, args)
+
+
+def disconnect() -> None:
+    os.execv(GPCLIENT, [GPCLIENT, "disconnect", "--wait", "5"])
+
+
+def main() -> None:
+    if os.geteuid() != 0:
+        die("must be run through pkexec", 1)
+    if len(sys.argv) < 2:
+        die("expected connect or disconnect")
+    command = sys.argv[1]
+    if command in {"connect", "connect-gateway"} and len(sys.argv) in {3, 4}:
+        if len(sys.argv) == 4 and sys.argv[3] != "fix-openssl":
+            die("invalid compatibility option")
+        connect(
+            validate_portal(sys.argv[2]),
+            direct_gateway=command == "connect-gateway",
+            openssl_compat=len(sys.argv) == 4,
+        )
+    elif command == "disconnect" and len(sys.argv) == 2:
+        disconnect()
+    else:
+        die("invalid command or arguments")
+
+
+if __name__ == "__main__":
+    main()

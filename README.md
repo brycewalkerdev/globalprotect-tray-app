@@ -84,6 +84,15 @@ It cannot run arbitrary executables, VPN scripts, or additional `gpclient`
 arguments. Review `globalprotect-tray-helper` and the `.policy` file before
 installing if desired.
 
+## Development disclosure
+
+This project was created agentically using OpenAI Codex under human direction.
+Its implementation, packaging, tests, and documentation were produced primarily
+through AI-assisted development. Because the application installs a privileged
+helper and Polkit policy, users and package maintainers should independently
+review those components before installation. The software is provided without
+warranty under the MIT License.
+
 ## Manual uninstall
 
 Packages should be removed with the system package manager. For a manual

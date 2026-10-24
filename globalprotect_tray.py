@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import errno
+from functools import lru_cache
 import json
 import os
 from pathlib import Path
@@ -84,10 +85,64 @@ def openssl_mode(settings: QSettings) -> str:
     return "always" if settings.contains("direct_gateway") else DEFAULT_OPENSSL_MODE
 
 
+@lru_cache(maxsize=1)
+def native_callback_available() -> bool:
+    """New gpauth versions own callback delivery via a private Unix socket."""
+    try:
+        return subprocess.run(
+            ["/usr/bin/gpauth", "auth-callback", "--help"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=5,
+            check=False,
+        ).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def repair_native_desktop_entry() -> None:
+    """Work around xdg-mime rejecting a quoted executable without spaces.
+
+    Preserve the upstream launcher and all metadata, and never overwrite a
+    user's existing entry. System package files remain owned by their package.
+    """
+    data_home = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+    target = data_home / "applications/gpgui.desktop"
+    if target.exists() or target.is_symlink():
+        return
+    data_dirs = os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share"
+    for directory in data_dirs.split(os.pathsep):
+        if not directory:
+            continue
+        source = Path(directory) / "applications/gpgui.desktop"
+        if not source.is_file():
+            continue
+        content = source.read_text(encoding="utf-8")
+        old = 'Exec="/usr/bin/gpclient" launch-gui %u'
+        if old not in content.splitlines():
+            return
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("x", encoding="utf-8") as output:
+            output.write(content.replace(old, "Exec=/usr/bin/gpclient launch-gui %u", 1))
+        return
+
+
 def forward_callback(callback_url: str) -> int:
     if not callback_url.startswith("globalprotectcallback:") or len(callback_url) > 1024 * 1024:
         print("globalprotect-tray: invalid authentication callback", file=sys.stderr)
         return 2
+    if native_callback_available():
+        try:
+            return subprocess.run(
+                ["/usr/bin/gpauth", "auth-callback", callback_url],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+                check=False,
+            ).returncode
+        except (OSError, subprocess.TimeoutExpired):
+            print("globalprotect-tray: could not deliver native authentication callback", file=sys.stderr)
+            return 1
     try:
         port = int(CALLBACK_PORT_FILE.read_text(encoding="utf-8").strip())
         if not 1 <= port <= 65535:
@@ -102,18 +157,24 @@ def forward_callback(callback_url: str) -> int:
 
 def ensure_callback_handler() -> None:
     try:
+        native = native_callback_available()
+        if native:
+            repair_native_desktop_entry()
         current = subprocess.run(
             ["/usr/bin/xdg-mime", "query", "default", "x-scheme-handler/globalprotectcallback"],
             check=False,
             capture_output=True,
             text=True,
         ).stdout.strip()
-        if current in {"", "gpgui.desktop"}:
+        # Modern gpauth insists on gpgui.desktop and registers it itself.
+        # Migrate our old handler too, so the two apps do not fight at startup.
+        handler = "gpgui.desktop" if native else "globalprotect-tray.desktop"
+        if current in {"", "gpgui.desktop", "globalprotect-tray.desktop"} and current != handler:
             subprocess.run(
                 [
                     "/usr/bin/xdg-mime",
                     "default",
-                    "globalprotect-tray.desktop",
+                    handler,
                     "x-scheme-handler/globalprotectcallback",
                 ],
                 check=False,

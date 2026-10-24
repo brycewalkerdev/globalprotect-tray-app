@@ -54,7 +54,16 @@ defaults automatically detect the server type and OpenSSL compatibility. Use
 an explicit mode only when automatic detection is unsuitable.
 
 The browser may ask permission to open **GlobalProtect Tray** after successful
-authentication. Accepting it returns the authentication result to `gpauth`.
+authentication (or **GP Connect** with newer `gpauth` versions). Accepting it
+returns the authentication result to `gpauth`.
+
+The tray detects `gpauth auth-callback` support and uses the upstream callback
+handler when available, retaining the TCP callback for older releases. Some
+upstream packages quote `/usr/bin/gpclient` in `gpgui.desktop`, which can make
+`xdg-mime` reject the handler and authentication fail before opening a browser.
+For that exact launcher, the tray creates a user-level desktop entry with the
+unnecessary quotes removed. It preserves the upstream metadata, leaves system
+package files untouched, and never overwrites an existing user desktop entry.
 
 ## Settings and diagnostics
 

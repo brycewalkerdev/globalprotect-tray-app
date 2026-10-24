@@ -1,7 +1,7 @@
 # Maintainer: Bryce Walker
 pkgname=globalprotect-tray
 pkgver=0.2.0
-pkgrel=4
+pkgrel=5
 pkgdesc="External-browser tray client for GlobalProtect-compatible VPNs"
 arch=('any')
 url="https://github.com/brycewalkerdev/globalprotect-tray-app"
@@ -28,13 +28,13 @@ source=(
   'README.md'
   'LICENSE'
 )
-sha256sums=('090d29e5ad0f250f87319cd21210457fe7c2427071f09f5fa6b755466786d4ea'
+sha256sums=('f92c2f1d1248750ac588fcc63b524ae715fc6c59cf6d1357c4569a9c70c89ad8'
             '6d5e913dc943dc548be7bd5644372e628527c17a701166db6ca475965bced1f1'
             'd54209533843413d492622c10877de2bfc32ecc0d8714985edaaf0ef0e866ad4'
             'd6674daefdd9284ed4c83a40596a0e9e650bb7ecbbd01296af678c26e2585191'
             'cfad9b3936b8e304f16c50d6fc69e8861c15f6bfc7795ee9a411b39c75a938ec'
             'f2576dd96e5b1f17671a3c67794b62adc95faa9f43809bfe11d9a1f27ba0c7bb'
-            '7a121fadf6d709e3d8c403d5af132832133702ba8d0b0621ea95fa9cf1d80d60'
+            'bef6c9d003b0e7b82c09b8979b4d6695e99cb9da322b25dbc59bc7884f16e59d'
             '53aa712159c8539042ef0a8e4bd32dcb12b8a50e93da96a62425da27d5f1b24c')
 
 check() {
